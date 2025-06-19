@@ -1,0 +1,9 @@
+Step ID,Step Name,Description,Estimated Time,Stuck Points,Resources,Decision Required?,Clarification Questions
+1,Identify need for help,User recognizes the need for mental health support,1 day,Not acknowledging symptoms or delaying action,Mental health self-assessments,Yes,Can you describe what you're experiencing emotionally or mentally?
+2,Determine provider type,"User needs help choosing between PCP, therapist, psychiatrist, or psychologist",10–30 min,Unsure of differences between provider types,Guides on types of mental health professionals,Yes,Do you prefer starting with your primary care provider or seeing a specialist directly?
+3,Check insurance coverage,User verifies what their insurance covers for mental health,30–60 min,No access to portal or plan documents,"Insurance portals, mental health benefits hotline",No,
+4,Search for in-network providers,User searches for mental health providers that accept their insurance,1–2 days,Too many options or none available soon,"Zocdoc, Headway, Alma, insurer directories",Yes,"Do you prefer virtual or in-person care? Are you looking for specific specialties (e.g., trauma, anxiety)?"
+5,Evaluate provider fit and availability,"User narrows list based on fit, expertise, and availability",1–2 hrs,Unclear about criteria to choose,"Provider bios, reviews, therapy approaches",No,
+6,Book appointment,"User schedules a session via platform, phone, or patient portal",5–10 min,"Booking errors, unclear process","Guides to scheduling, customer support",No,
+7,Complete intake forms,User completes pre-session documentation,10–30 min,Forms are complex or require history,"Form walkthroughs, mental health history templates",No,
+8,Attend first session,User attends the scheduled therapy session,45–60 min,"Anxiety, no-shows","Session prep checklists, anxiety coping techniques",No,
