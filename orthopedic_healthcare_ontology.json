@@ -1,0 +1,127 @@
+{
+  "entities": {
+    "Patient": {
+      "attributes": [
+        "symptoms",
+        "age",
+        "insurance_plan",
+        "location"
+      ]
+    },
+    "Primary Care Provider": {
+      "attributes": [
+        "in_network",
+        "accepting_new_patients",
+        "referral_required"
+      ]
+    },
+    "Orthopedic Specialist": {
+      "attributes": [
+        "specialty",
+        "in_network",
+        "hospital_affiliation"
+      ]
+    },
+    "Clinic / Facility": {
+      "attributes": [
+        "type",
+        "network_status",
+        "appointment_availability"
+      ]
+    },
+    "Insurance Plan": {
+      "attributes": [
+        "payer",
+        "plan_type",
+        "requires_referral",
+        "copay"
+      ]
+    },
+    "Payer": {
+      "attributes": [
+        "name",
+        "type",
+        "medicare_medicaid_commercial"
+      ]
+    },
+    "Imaging Center": {
+      "attributes": [
+        "in_network",
+        "modality",
+        "availability"
+      ]
+    },
+    "Billing Vendor": {
+      "attributes": [
+        "services",
+        "payer_integrations"
+      ]
+    },
+    "Prior Authorization Vendor": {
+      "attributes": [
+        "used_by",
+        "workflow"
+      ]
+    }
+  },
+  "relationships": [
+    {
+      "from": "Patient",
+      "to": "Primary Care Provider",
+      "type": "seeks_care_from",
+      "condition": "insurance_plan.requires_referral == True"
+    },
+    {
+      "from": "Patient",
+      "to": "Orthopedic Specialist",
+      "type": "seeks_care_directly",
+      "condition": "insurance_plan.requires_referral == False"
+    },
+    {
+      "from": "Primary Care Provider",
+      "to": "Orthopedic Specialist",
+      "type": "refers_to"
+    },
+    {
+      "from": "Orthopedic Specialist",
+      "to": "Clinic / Facility",
+      "type": "practices_at"
+    },
+    {
+      "from": "Orthopedic Specialist",
+      "to": "Imaging Center",
+      "type": "orders_diagnostics"
+    },
+    {
+      "from": "Imaging Center",
+      "to": "Insurance Plan",
+      "type": "requires_prior_auth",
+      "condition": "expensive_procedure == True"
+    },
+    {
+      "from": "Clinic / Facility",
+      "to": "Billing Vendor",
+      "type": "uses_billing_services"
+    },
+    {
+      "from": "Billing Vendor",
+      "to": "Payer",
+      "type": "submits_claims"
+    },
+    {
+      "from": "Payer",
+      "to": "Patient",
+      "type": "bills_or_reimburses"
+    },
+    {
+      "from": "Insurance Plan",
+      "to": "Payer",
+      "type": "is_managed_by"
+    },
+    {
+      "from": "Insurance Plan",
+      "to": "Prior Authorization Vendor",
+      "type": "delegates_to"
+    }
+  ]
+}
