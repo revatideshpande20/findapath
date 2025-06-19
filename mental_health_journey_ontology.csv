@@ -1,0 +1,9 @@
+Step ID,Step Name,Description,Estimated Time,Stuck Points,Resources
+1,Identify need for help,User feels unwell and seeks help,1 day,Not acknowledging the need,"Self-assessment tools, Mental health quizzes"
+2,Understand provider types,"User learns difference between psychologist, psychiatrist, therapist",10-20 min,Unfamiliar with terms,"Simple guides, comparison tables"
+3,Check insurance coverage,User verifies what their insurance covers,30 min,No access to insurance info,"Insurance provider website, help lines"
+4,Search for providers,User looks up nearby or virtual therapists,1-2 days,"Too many choices, few match needs","Zocdoc, Headway, Alma"
+5,Filter by availability and fit,"User narrows down list by availability, modality, insurance",1-2 hrs,None available soon,"Waitlist notifications, virtual options"
+6,Book appointment,User schedules session,5-10 min,"Site errors, unclear steps","Booking guides, clinic contact info"
+7,Complete intake forms,User fills out pre-session paperwork,10-30 min,Forms are hard to understand,Form assistance tools
+8,Attend first session,User attends session,45-60 min,"Anxiety, no-shows","Reminders, pre-session tips"
