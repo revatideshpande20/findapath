@@ -1,13 +1,23 @@
 # Streamlit MVP: Therapy Journey Mapper v2
 import streamlit as st
 import pandas as pd
+import json
+import networkx as nx
+import matplotlib.pyplot as plt
 
 # Load the updated ontology CSV
 @st.cache_data
 def load_journey():
     return pd.read_csv("mental_health_journey_ontology_v2.csv")
 
+# Load the static orthopedic ontology
+@st.cache_data
+def load_orthopedic_ontology():
+    with open("orthopedic_healthcare_ontology.json") as f:
+        return json.load(f)
+
 journey_df = load_journey()
+ortho_ontology = load_orthopedic_ontology()
 
 # Title
 st.title("🧠 Find a Path: Mental Health Navigation Tool")
@@ -72,3 +82,22 @@ if user_input:
 with st.expander("🧭 View Full Journey Map"):
     for _, row in journey_df.iterrows():
         st.markdown(f"**Step {row['Step ID']} - {row['Step Name']}**: {row['Description']} → _{row['Estimated Time']}_")
+
+# Visualize static orthopedic system model
+with st.expander("🏥 View Orthopedic Healthcare Ecosystem Graph"):
+    G = nx.DiGraph()
+    for entity in ortho_ontology['entities']:
+        G.add_node(entity, label=entity)
+    for rel in ortho_ontology['relationships']:
+        label = rel['type']
+        if 'condition' in rel:
+            label += f"\n({rel['condition']})"
+        G.add_edge(rel['from'], rel['to'], label=label)
+
+    fig, ax = plt.subplots(figsize=(10, 8))
+    pos = nx.spring_layout(G, k=0.5, seed=42)
+    nx.draw(G, pos, with_labels=True, node_color='lightblue', node_size=2000, edge_color='gray', font_size=9, ax=ax)
+    edge_labels = nx.get_edge_attributes(G, 'label')
+    nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_size=7, ax=ax)
+    st.pyplot(fig)
+    st.caption("This graph shows relationships between patients, providers, insurers, and supporting entities in an orthopedic care scenario.")
