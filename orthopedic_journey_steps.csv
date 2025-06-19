@@ -1,0 +1,8 @@
+﻿Step ID,Step Name,Description,Estimated Time,Stuck Points,Resources,Decision Required?,Clarification Questions
+1,Recognize symptoms,"User experiences joint pain, injury, or reduced mobility",1–7 days,"Minimizing symptoms, unclear if specialist needed","Symptom checkers, health forums",Yes,"Is this pain chronic, new, or injury-related?"
+2,Identify right provider type,"Determine whether to see PCP, urgent care, or orthopedic specialist",1 day,Unsure of entry point,"Insurance directory, PCP consultation",Yes,Do you need a referral from a PCP or can you directly book a specialist?
+3,Check insurance coverage,Confirm which providers are in-network under your insurance plan,15–30 min,"Complex provider networks, unclear coverage","Insurance portal, helpline, employer benefits",No,
+4,Obtain referral (if needed),Visit PCP to get referral or prior auth if required by insurance,3–7 days,"Scheduling delays, insurance paperwork","PCP clinic, insurance support",Yes,Does your plan require a referral for orthopedic specialists?
+5,Book orthopedic consultation,Schedule visit with in-network orthopedic specialist,3–14 days,Limited specialist availability,"ZocDoc, clinic websites, call center",No,
+6,Attend visit & complete intake,Visit orthopedic provider and complete pre-visit forms or X-rays,1 day,Prep steps not communicated clearly,"Appointment email, provider instructions",No,
+7,Diagnostics & next steps,Complete imaging/labs and receive diagnosis with treatment plan,2–10 days,"Waiting on results, delays in scheduling follow-ups","Radiology centers, patient portals",Yes,"Will treatment involve PT, injections, surgery, or medication?"
