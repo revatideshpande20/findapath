@@ -5,57 +5,81 @@ import json
 import networkx as nx
 import matplotlib.pyplot as plt
 
-# Load the updated ontology CSV
+# Load journey ontologies
 @st.cache_data
-def load_journey():
+def load_mental_journey():
     return pd.read_csv("mental_health_journey_ontology_v2.csv")
 
-# Load the static orthopedic ontology
+@st.cache_data
+def load_orthopedic_journey():
+    return pd.read_csv("orthopedic_journey_steps.csv")
+
 @st.cache_data
 def load_orthopedic_ontology():
     with open("orthopedic_healthcare_ontology.json") as f:
         return json.load(f)
 
-journey_df = load_journey()
+mental_df = load_mental_journey()
+ortho_df = load_orthopedic_journey()
 ortho_ontology = load_orthopedic_ontology()
 
 # Title
-st.title("🧠 Find a Path: Mental Health Navigation Tool")
-st.markdown("Helping you navigate the complex journey to finding mental health care in the U.S.")
+st.title("🧠 Find a Path: Healthcare Navigation Tool")
+st.markdown("Helping you navigate your care journey — mental health, orthopedics, and beyond.")
 
 # User input
 user_input = st.text_area("Describe your situation in detail (symptoms, confusion, what you're looking for, etc.):", height=150)
 
-# Inference function with logic for ambiguity and branching
-def infer_step_and_questions(text):
+# Domain detection
+@st.cache_data
+def detect_domain(text):
     text = text.lower()
-    step = 1
-    clarifications = []
+    if any(x in text for x in ["anxious", "numb", "unmotivated", "depressed", "therapist"]):
+        return "mental_health"
+    if any(x in text for x in ["knee", "joint", "limp", "mobility", "orthopedic", "bone", "pain"]):
+        return "orthopedic"
+    return "mental_health"  # default fallback
 
-    if any(x in text for x in ["unmotivated", "numb", "angry", "depressed"]):
+# Step inference based on domain
+def infer_step(text, domain):
+    text = text.lower()
+    clarifications = []
+    if domain == "mental_health":
+        journey_df = mental_df
+        step = 1
+        if "doctor" in text or "pcp" in text or "therapist" in text:
+            step = 2
+        if "insurance" in text or "coverage" in text:
+            step = max(step, 3)
+        if "find" in text or "search" in text:
+            step = max(step, 4)
+        if "book" in text or "appointment" in text:
+            step = max(step, 6)
+    elif domain == "orthopedic":
+        journey_df = ortho_df
+        step = 1
+        if "what kind of doctor" in text or "orthopedic" in text:
+            step = 2
+        if "insurance" in text or "uhc" in text:
+            step = max(step, 3)
+        if "referral" in text or "pcp" in text:
+            step = max(step, 4)
+        if "book" in text or "appointment" in text:
+            step = max(step, 5)
+    else:
+        journey_df = mental_df
         step = 1
 
-    if "what kind of doctor" in text or "pcp" in text or "therapist" in text:
-        step = 2
-
-    if "insurance" in text or "uhc" in text or "coverage" in text:
-        step = max(step, 3)
-
-    if "find" in text and "doctor" in text or "search" in text:
-        step = max(step, 4)
-
-    if "book" in text or "appointment" in text:
-        step = max(step, 6)
-
     row = journey_df[journey_df["Step ID"] == step].iloc[0]
-    if row["Decision Required?"] == "Yes" and row["Clarification Questions"]:
+    if row.get("Decision Required?") == "Yes" and row.get("Clarification Questions"):
         clarifications.append(row["Clarification Questions"])
 
-    return step, clarifications
+    return step, clarifications, journey_df
 
 # Main logic
 if user_input:
-    step_id, questions = infer_step_and_questions(user_input)
+    domain = detect_domain(user_input)
+    step_id, questions, journey_df = infer_step(user_input, domain)
     row = journey_df[journey_df["Step ID"] == step_id].iloc[0]
 
     st.subheader("📍 You are here in your journey")
@@ -71,19 +95,24 @@ if user_input:
             st.markdown(f"- {q}")
 
     st.subheader("➡️ What to do next")
-    if step_id < 8:
+    if step_id < journey_df["Step ID"].max():
         next_row = journey_df[journey_df["Step ID"] == step_id + 1].iloc[0]
         st.markdown(f"**Next Step: {next_row['Step Name']}**")
         st.markdown(next_row['Description'])
     else:
-        st.success("You're at the final step. Good luck with your session!")
+        st.success("You're at the final step. Good luck!")
 
-# Optional: display full journey map
+# Optional: view full journey map
 with st.expander("🧭 View Full Journey Map"):
-    for _, row in journey_df.iterrows():
-        st.markdown(f"**Step {row['Step ID']} - {row['Step Name']}**: {row['Description']} → _{row['Estimated Time']}_")
+    st.markdown("**Mental Health Steps:**")
+    for _, row in mental_df.iterrows():
+        st.markdown(f"- **Step {row['Step ID']} - {row['Step Name']}**: {row['Description']}")
 
-# Visualize static orthopedic system model
+    st.markdown("**Orthopedic Steps:**")
+    for _, row in ortho_df.iterrows():
+        st.markdown(f"- **Step {row['Step ID']} - {row['Step Name']}**: {row['Description']}")
+
+# Visualize orthopedic system model
 with st.expander("🏥 View Orthopedic Healthcare Ecosystem Graph"):
     G = nx.DiGraph()
     for entity in ortho_ontology['entities']:
