@@ -1,7 +1,7 @@
 # Streamlit MVP: Mental Health Journey Mapper
 import streamlit as st
 import pandas as pd
-import openai
+#import openai
 import os
 
 # Load ontology CSV
