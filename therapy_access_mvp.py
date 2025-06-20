@@ -1,11 +1,11 @@
-# Streamlit MVP: Therapy Journey Mapper v2
+# Streamlit MVP: Therapy Journey Mapper + Ontology Mapper
 import streamlit as st
 import pandas as pd
 import json
 import networkx as nx
 import matplotlib.pyplot as plt
 
-# Load journey ontologies
+# Load ontology and journey steps
 @st.cache_data
 def load_mental_journey():
     return pd.read_csv("mental_health_journey_ontology_v2.csv")
@@ -16,16 +16,15 @@ def load_orthopedic_journey():
 
 @st.cache_data
 def load_orthopedic_ontology():
-    with open("orthopedic_healthcare_ontology.json") as f:
+    with open("orthopedic_healthcare_ontology_v2.json") as f:
         return json.load(f)
 
 mental_df = load_mental_journey()
 ortho_df = load_orthopedic_journey()
 ortho_ontology = load_orthopedic_ontology()
 
-# Title
 st.title("🧠 Find a Path: Healthcare Navigation Tool")
-st.markdown("Helping you navigate your care journey — mental health, orthopedics, and beyond.")
+st.markdown("Helping you navigate your care journey — mental health, orthopedics, and now, data understanding.")
 
 # User input
 user_input = st.text_area("Describe your situation in detail (symptoms, confusion, what you're looking for, etc.):", height=150)
@@ -40,7 +39,6 @@ def detect_domain(text):
         return "orthopedic"
     return "mental_health"  # default fallback
 
-# Step inference based on domain
 def infer_step(text, domain):
     text = text.lower()
     clarifications = []
@@ -71,12 +69,14 @@ def infer_step(text, domain):
         step = 1
 
     row = journey_df[journey_df["Step ID"] == step].iloc[0]
-    if row.get("Decision Required?") == "Yes" and row.get("Clarification Questions"):
-        clarifications.append(row["Clarification Questions"])
+    if row.get("Decision Required?") == "Yes":
+        clar_q = str(row.get("Clarification Questions", "")).strip()
+        if clar_q and clar_q.lower() != "nan":
+            clarifications.append(clar_q)
 
     return step, clarifications, journey_df
 
-# Main logic
+# Journey mapping
 if user_input:
     domain = detect_domain(user_input)
     step_id, questions, journey_df = infer_step(user_input, domain)
@@ -112,21 +112,47 @@ with st.expander("🧭 View Full Journey Map"):
     for _, row in ortho_df.iterrows():
         st.markdown(f"- **Step {row['Step ID']} - {row['Step Name']}**: {row['Description']}")
 
-# Visualize orthopedic system model
-with st.expander("🏥 View Orthopedic Healthcare Ecosystem Graph"):
-    G = nx.DiGraph()
-    for entity in ortho_ontology['entities']:
-        G.add_node(entity, label=entity)
-    for rel in ortho_ontology['relationships']:
-        label = rel['type']
-        if 'condition' in rel:
-            label += f"\n({rel['condition']})"
-        G.add_edge(rel['from'], rel['to'], label=label)
+# Visualize orthopedic ontology with highlights from uploaded data
+with st.expander("📊 Upload Claims Data to Map Real-World Coverage"):
+    uploaded_file = st.file_uploader("Upload a sample claims dataset (CSV):")
+    if uploaded_file:
+        df = pd.read_csv(uploaded_file)
+        st.write("Uploaded Data Preview:", df.head())
 
-    fig, ax = plt.subplots(figsize=(10, 8))
-    pos = nx.spring_layout(G, k=0.5, seed=42)
-    nx.draw(G, pos, with_labels=True, node_color='lightblue', node_size=2000, edge_color='gray', font_size=9, ax=ax)
-    edge_labels = nx.get_edge_attributes(G, 'label')
-    nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_size=7, ax=ax)
-    st.pyplot(fig)
-    st.caption("This graph shows relationships between patients, providers, insurers, and supporting entities in an orthopedic care scenario.")
+        found_entities = set()
+        found_edges = set()
+
+        # Map columns to ontology
+        columns = set(df.columns.str.lower())
+
+        for rel in ortho_ontology['relationships']:
+            from_node, to_node = rel['from'], rel['to']
+            rel_cols = [col.lower() for col in rel.get('via_data_columns', [])]
+            if any(col in columns for col in rel_cols):
+                found_entities.add(from_node)
+                found_entities.add(to_node)
+                found_edges.add((from_node, to_node))
+
+        st.markdown("### Network Coverage in Uploaded Dataset")
+        G = nx.DiGraph()
+        for ent in {e['name'] for e in ortho_ontology['entities']}:
+            color = 'lightgreen' if ent in found_entities else 'lightgray'
+            G.add_node(ent, label=ent, color=color)
+
+        for rel in ortho_ontology['relationships']:
+            from_node, to_node = rel['from'], rel['to']
+            color = 'green' if (from_node, to_node) in found_edges else 'gray'
+            label = rel['type']
+            G.add_edge(from_node, to_node, label=label, color=color)
+
+        pos = nx.spring_layout(G, seed=42)
+        edge_colors = [G[u][v]['color'] for u, v in G.edges()]
+        node_colors = [G.nodes[n]['color'] for n in G.nodes()]
+
+        fig, ax = plt.subplots(figsize=(10, 8))
+        nx.draw(G, pos, with_labels=True, node_color=node_colors, edge_color=edge_colors, node_size=2000, font_size=9, ax=ax)
+        edge_labels = nx.get_edge_attributes(G, 'label')
+        nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_size=8, ax=ax)
+        st.pyplot(fig)
+
+        st.success(f"✅ Matched {len(found_entities)} entities and {len(found_edges)} relationships to the uploaded data.")
