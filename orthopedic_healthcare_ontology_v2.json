@@ -1,0 +1,233 @@
+{
+  "entities": [
+    {
+      "name": "Patient",
+      "description": "An individual receiving orthopedic care.",
+      "attributes": [
+        {
+          "name": "patient_id",
+          "type": "string",
+          "description": "Unique patient identifier"
+        },
+        {
+          "name": "dob",
+          "type": "date",
+          "description": "Date of birth"
+        },
+        {
+          "name": "gender",
+          "type": "string",
+          "description": "Patient gender"
+        },
+        {
+          "name": "insurance_id",
+          "type": "string",
+          "description": "Payer enrollment identifier"
+        },
+        {
+          "name": "diagnosis_code",
+          "type": "string",
+          "description": "ICD diagnosis code"
+        }
+      ]
+    },
+    {
+      "name": "Provider",
+      "description": "A healthcare provider delivering services (PCP or Specialist).",
+      "attributes": [
+        {
+          "name": "provider_id",
+          "type": "string",
+          "description": "Unique provider identifier (NPI)"
+        },
+        {
+          "name": "specialty",
+          "type": "string",
+          "description": "Provider's medical specialty"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Full provider name"
+        }
+      ]
+    },
+    {
+      "name": "Clinic",
+      "description": "Facility or organization where care is delivered.",
+      "attributes": [
+        {
+          "name": "clinic_id",
+          "type": "string",
+          "description": "Unique clinic identifier"
+        },
+        {
+          "name": "location",
+          "type": "string",
+          "description": "Address or geographic location"
+        },
+        {
+          "name": "network_affiliation",
+          "type": "string",
+          "description": "Affiliated network or system"
+        }
+      ]
+    },
+    {
+      "name": "Payer",
+      "description": "The insurance organization responsible for covering patient costs.",
+      "attributes": [
+        {
+          "name": "payer_id",
+          "type": "string",
+          "description": "Unique payer identifier"
+        },
+        {
+          "name": "payer_name",
+          "type": "string",
+          "description": "Name of insurance provider"
+        },
+        {
+          "name": "plan_type",
+          "type": "string",
+          "description": "Type of insurance plan (e.g., PPO, HMO)"
+        }
+      ]
+    },
+    {
+      "name": "Claim",
+      "description": "A billing record for services rendered by a provider to a patient.",
+      "attributes": [
+        {
+          "name": "claim_id",
+          "type": "string",
+          "description": "Unique claim identifier"
+        },
+        {
+          "name": "patient_id",
+          "type": "string",
+          "description": "ID of the patient receiving care"
+        },
+        {
+          "name": "provider_id",
+          "type": "string",
+          "description": "ID of the provider rendering care"
+        },
+        {
+          "name": "cpt_code",
+          "type": "string",
+          "description": "Procedure code"
+        },
+        {
+          "name": "dos",
+          "type": "date",
+          "description": "Date of service"
+        },
+        {
+          "name": "claim_amount",
+          "type": "float",
+          "description": "Billed amount"
+        },
+        {
+          "name": "payer_id",
+          "type": "string",
+          "description": "Insurance responsible for reimbursement"
+        }
+      ]
+    },
+    {
+      "name": "Lab",
+      "description": "Facility performing diagnostic services such as imaging or bloodwork.",
+      "attributes": [
+        {
+          "name": "lab_id",
+          "type": "string",
+          "description": "Lab entity identifier"
+        },
+        {
+          "name": "test_code",
+          "type": "string",
+          "description": "Test or imaging code"
+        },
+        {
+          "name": "result",
+          "type": "string",
+          "description": "Diagnostic result or output"
+        },
+        {
+          "name": "associated_claim_id",
+          "type": "string",
+          "description": "Link to originating claim"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "from": "Patient",
+      "to": "Payer",
+      "type": "insured_by",
+      "via_data_columns": [
+        "insurance_id",
+        "payer_id"
+      ]
+    },
+    {
+      "from": "Patient",
+      "to": "Provider",
+      "type": "receives_care_from",
+      "via_data_columns": [
+        "patient_id",
+        "provider_id"
+      ]
+    },
+    {
+      "from": "Provider",
+      "to": "Clinic",
+      "type": "practices_at",
+      "via_data_columns": [
+        "clinic_id"
+      ]
+    },
+    {
+      "from": "Claim",
+      "to": "Patient",
+      "type": "submitted_for",
+      "via_data_columns": [
+        "patient_id"
+      ]
+    },
+    {
+      "from": "Claim",
+      "to": "Provider",
+      "type": "rendered_by",
+      "via_data_columns": [
+        "provider_id"
+      ]
+    },
+    {
+      "from": "Claim",
+      "to": "Payer",
+      "type": "billed_to",
+      "via_data_columns": [
+        "payer_id"
+      ]
+    },
+    {
+      "from": "Lab",
+      "to": "Claim",
+      "type": "linked_to",
+      "via_data_columns": [
+        "associated_claim_id"
+      ]
+    },
+    {
+      "from": "Patient",
+      "to": "Lab",
+      "type": "undergoes_testing",
+      "via_data_columns": [
+        "lab_id"
+      ]
+    }
+  ]
+}
