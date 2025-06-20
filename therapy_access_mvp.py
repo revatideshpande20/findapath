@@ -6,10 +6,21 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 # Load ontology
+#@st.cache_data
+#def load_orthopedic_ontology():
+#    with open("orthopedic_healthcare_ontology_v2.json") as f:
+#        return json.load(f)
+
 @st.cache_data
 def load_orthopedic_ontology():
     with open("orthopedic_healthcare_ontology_v2.json") as f:
-        return json.load(f)
+        data = json.load(f)
+        if isinstance(data, list):
+            # Convert flat list to expected format if needed
+            entities = [item for item in data if item.get("type") == "entity"]
+            relationships = [item for item in data if item.get("type") == "relationship"]
+            return {"entities": entities, "relationships": relationships}
+        return data
 
 ortho_ontology = load_orthopedic_ontology()
 
