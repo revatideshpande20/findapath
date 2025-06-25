@@ -1,6 +1,6 @@
 # 📁 Phase 1: Ontology and Schema Setup
 
-# File: orthopedic_healthcare_ontology.json
+# File: orthopedic_healthcare_ontology_v2.json
 
 ontology = {
     "entities": [
@@ -23,7 +23,7 @@ ontology = {
 
 # Save as JSON manually or via:
 import json
-with open("orthopedic_healthcare_ontology.json", "w") as f:
+with open("orthopedic_healthcare_ontology_v2.json", "w") as f:
     json.dump(ontology, f, indent=2)
 
 # 📁 Phase 2: Streamlit + Network Graph
@@ -41,7 +41,7 @@ st.title("🧠 Ontology-Based Data Mapper for Orthopedic Claims")
 @st.cache_data
 
 def load_ontology():
-    with open("orthopedic_healthcare_ontology.json") as f:
+    with open("orthopedic_healthcare_ontology_v2.json") as f:
         data = json.load(f)
         return data
 
