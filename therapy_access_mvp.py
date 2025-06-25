@@ -8,7 +8,7 @@ ontology = {
         {"name": "Provider", "attributes": ["provider_id", "npi", "specialty"], "type": "entity"},
         {"name": "Payer", "attributes": ["payer_id", "plan_name"], "type": "entity"},
         {"name": "Facility", "attributes": ["facility_id", "location", "type"], "type": "entity"},
-        {"name": "Claim", "attributes": ["claim_id", "date", "diagnosis", "procedure_code"], "type": "entity"}
+        {"name": "Claim", "attributes": ["claim_id", "date", "diagnosis", "procedure_code", "claim_amount"], "type": "entity"}
     ],
     "relationships": [
         {"from": "Patient", "to": "Provider", "type": "consults_with", "via_data_columns": ["provider_id"]},
@@ -56,6 +56,11 @@ if uploaded_file:
     columns = set(df.columns.str.lower())
     found_entities = set()
     found_edges = set()
+    entity_column_counts = {}
+
+    for ent in ontology['entities']:
+        match_count = sum(1 for attr in ent['attributes'] if attr.lower() in columns)
+        entity_column_counts[ent['name']] = match_count
 
     for rel in ontology['relationships']:
         from_node = rel['from']
@@ -65,9 +70,13 @@ if uploaded_file:
             found_entities.update([from_node, to_node])
             found_edges.add((from_node, to_node))
 
+    max_count = max(entity_column_counts.values()) or 1
+
     G = nx.DiGraph()
     for ent in [e['name'] for e in ontology['entities']]:
-        color = 'lightgreen' if ent in found_entities else 'lightgray'
+        count = entity_column_counts.get(ent, 0)
+        intensity = count / max_count
+        color = (1 - intensity, 1 - intensity, 1)  # from white to blue
         G.add_node(ent, color=color)
 
     for rel in ontology['relationships']:
@@ -97,13 +106,28 @@ if uploaded_file:
     else:
         st.success("All required columns for detected relationships are present.")
 
-# 📁 Phase 4 (Optional): Natural Language Interface
-    st.subheader("🔎 Ask a question (beta, local parsing only)")
-    question = st.text_input("E.g., Which facilities are most visited?")
+# 📁 Phase 4: Natural Language Interface (no LLM)
+    st.subheader("🔎 Ask a simple question about the dataset")
+    question = st.text_input("Ask a question like 'What is the total claim amount?' or 'How many unique patients?'")
+
+    def try_to_answer(q):
+        q = q.lower()
+        for col in df.columns:
+            col_lower = col.lower()
+            if col_lower in q:
+                if "how many" in q or "number of" in q:
+                    return f"{col}: {df[col].nunique()} unique values"
+                elif "total" in q or "sum" in q:
+                    if pd.api.types.is_numeric_dtype(df[col]):
+                        return f"{col}: {df[col].sum():,.2f}"
+                elif "average" in q or "mean" in q:
+                    if pd.api.types.is_numeric_dtype(df[col]):
+                        return f"{col}: {df[col].mean():,.2f}"
+                elif "maximum" in q:
+                    return f"{col}: {df[col].max()}"
+                elif "minimum" in q:
+                    return f"{col}: {df[col].min()}"
+        return "Sorry, I couldn't match your question to any column."
+
     if question:
-        if "facility" in question.lower():
-            st.write(df["facility_id"].value_counts().head())
-        elif "provider" in question.lower():
-            st.write(df["provider_id"].value_counts().head())
-        else:
-            st.warning("This prototype only supports 'facility' or 'provider' questions.")
+        st.success(try_to_answer(question))
